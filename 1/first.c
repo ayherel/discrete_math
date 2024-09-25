@@ -29,7 +29,7 @@ void print_list(Node *head) {
         printf("value adress = %p \n", &(current->value));
         current = current->next;
     if (flag == 1)
-    print_element_from_adres(&(current->value));
+    //print_element_from_adres(&(current->value));
     flag++;
     }
 }
@@ -120,7 +120,7 @@ void append_node(Node **head, int value) {
     }
 }
 
-
+/*
 // (F4)- Функция для добавления узла в начало списка
 void append_node_begin(Node **head, int value){
     Node *new_node =  (Node*)malloc(sizeof(Node));
@@ -220,7 +220,7 @@ Node* extract_node_from_adress(Node *head, int index) {
         return NULL; // Индекс вне диапазона
     }
 }
-
+*/
 
 int main()
 {
