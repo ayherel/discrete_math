@@ -19,44 +19,51 @@ struct Node {
 
 typedef struct Node Node;
 
+
+// (F1) - Функция для вывода элементов списка
 void print_list(Node *head) {
+    int flag = 0;
     Node *current = head;
     while (current != NULL) {
         printf("value = %d\n", current->value);
         printf("value adress = %p \n", &(current->value));
         current = current->next;
+    if (flag == 1)
+    print_element_from_adres(&(current->value));
+    flag++;
     }
 }
 
+
     
 
-    // Вспомогательная функция для проверки, является ли узел уже добавленным в объединенный список
-    int is_added(Node *node, Node **added_nodes) {
-        Node *current = *added_nodes;
-        while (current != NULL) {
-            if (current == node) {
-                return 1;
-            }
-            current = current->next;
+// (для F2) - Вспомогательная функция для проверки, является ли узел уже добавленным в объединенный список
+int is_added(Node *node, Node **added_nodes) {
+    Node *current = *added_nodes;
+    while (current != NULL) {
+        if (current == node) {
+            return 1;
         }
-        return 0;
+        current = current->next;
     }
+    return 0;
+}
     
 
 
-    // Вспомогательная функция для добавления узла в список добавленных узлов
-    void add_node_to_added(Node *node, Node **added_nodes) {
-        Node *new_node = (Node*)malloc(sizeof(Node));
-        new_node->value = node->value;
-        new_node->next = *added_nodes;
-        *added_nodes = new_node;
-    }
+// (для F2) - Вспомогательная функция для добавления узла в список добавленных узлов
+void add_node_to_added(Node *node, Node **added_nodes) {
+    Node *new_node = (Node*)malloc(sizeof(Node));
+    new_node->value = node->value;
+    new_node->next = *added_nodes;
+    *added_nodes = new_node;
+}
 
 
 
 
 
-// Функция для поиска узла с минимальным значением в двух списках
+// (F2) - Функция для поиска узла с минимальным значением в двух списках
 Node* find_min_node(Node *head_one, Node *head_two, int minimum, Node *added_nodes) {
     Node *min_node = NULL;
     int min_value = 1000; // Начальное значение для минимума
@@ -88,7 +95,8 @@ Node* find_min_node(Node *head_one, Node *head_two, int minimum, Node *added_nod
 }
 
 
-// Функция для добавления узла в конец списка
+
+// (F3) - Функция для добавления узла в конец списка
 void append_node(Node **head, int value) {
     // Создаем новый узел
     Node *new_node = (Node*)malloc(sizeof(Node));
@@ -109,6 +117,107 @@ void append_node(Node **head, int value) {
             current = current->next;
         }
         current->next = new_node;
+    }
+}
+
+
+// (F4)- Функция для добавления узла в начало списка
+void append_node_begin(Node **head, int value){
+    Node *new_node =  (Node*)malloc(sizeof(Node));
+    if (new_node == NULL) {
+        printf("Ошибка выделения памяти\n");
+        exit(2);
+    }
+    new_node->value = value;
+    new_node->next = *head;
+    *head = new_node;
+}
+
+
+// (F5)- Функция для добавления узла в произвольное место списка
+void append_node_random(Node *head, int value){
+    if (head == NULL){
+        printf("Ошибка с узлом, предыдущий не можеть быть нулл");
+        return 1;
+    }
+
+    Node *new_node =  (Node*)malloc(sizeof(Node));
+    if (new_node == NULL) {
+        printf("Ошибка выделения памяти\n");
+        exit(2);
+    }
+    new_node->value = value;
+    new_node->next = head->next;
+    head->next= new_node;
+}
+
+// (F6)- Функция для извлечения узла из начало списка
+void extract_node_begin(Node **head){
+    if (*head == NULL) {
+       printf("Такой узел отсутствует");
+    }
+    Node *extract_node = *head;
+    *head = extract_node->next;
+    extract_node->next  = NULL;
+    return extract_node;
+}
+
+// (F7)- Функция для извлечения узла из конца списка
+void extract_node(Node **head){
+    if (head == NULL) {
+       printf("Такой узел отсутствует");
+    }
+
+    Node *current = *head;
+    Node *prev = NULL;
+    while (current->next != NULL) {
+        prev = current;
+        current = current->next;
+    }
+    if (prev != NULL) {
+        prev->next = NULL;
+    } else {
+        *head = NULL; // Список состоял из одного узла
+    }
+    return current;
+}
+
+// (F8)- Функция для извлечения узла из произвольной части списка
+Node* extract_node_random(Node **head, Node *target_node) {
+    if (*head == NULL || target_node == NULL) {
+        return NULL;
+    }
+    Node *current = *head;
+    Node *prev = NULL;
+    while (current != target_node && current != NULL) {
+        prev = current;
+        current = current->next;
+    }
+    if (current == NULL) {
+        return NULL; // Узел не найден
+    }
+    if (prev != NULL) {
+        prev->next = current->next;
+    } else {
+        *head = current->next; // Узел был первым в списке
+    }
+    current->next = NULL;
+    return current;
+}
+
+
+// (F9)- Функция для извлечения узла из произвольной части списка
+Node* extract_node_from_adress(Node *head, int index) {
+    Node *current = head;
+    int count = 0;
+    while (current != NULL && count < index) {
+        current = current->next;
+        count++;
+    }
+    if (count == index) {
+        return current;
+    } else {
+        return NULL; // Индекс вне диапазона
     }
 }
 
@@ -139,7 +248,7 @@ int main()
     }
     length_sum++;
 
-    
+
     printf("список [1]\n");
     print_list(head); // Выводим узлы списка 1
 
@@ -198,5 +307,5 @@ int main()
     return 0;
 }
 // Код завершения 0 - весь код выполнился (надеюсь нормально)
-// Код завершения 1 - пока не придумал
+// Код завершения 1 - ошибка с узлами
 // Код завершения 2 - нехватка памяти
