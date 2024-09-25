@@ -1,197 +1,166 @@
-#include <stdio.h>
+/*
+Сформировать два односвязных списка целых чисел. Готово
+
+Слить их в односвязный циклический список. Наполовину готово
+Сделать список циклическим. Дописать
+
+Так чтобы узлы были 
+расположены по возрастанию значений. Готово
+*/
 #include <stdlib.h>
-#include <locale.h>
-#include <stdbool.h>
+#include <stdio.h>
 #include <conio.h>
-#include <locale.h>
+#include <time.h>
 
-// Определение структуры узла
-typedef struct Node {
-    int data;
-    struct Node *Next;
-} Node;
+struct Node {
+    int value;
+    struct Node *next;
+};
 
-// Определение структуры списка
-typedef struct {
-    Node *Head;
-    Node *Tail;
-    int count_Node;
-} OneList;
+typedef struct Node Node;
 
-// Определение итератора
-typedef struct {
-    Node *ptr;  // указатель на узел, на который указывает итератор
-    OneList *list;  // указатель на список, к которому привязан итератор
-} Iterator;
-
-// Инициализация итератора
-void init_iterator(Iterator *iter, OneList *list) {
-    iter->ptr = list->Head;  // направляем итератор на первый узел списка
-    iter->list = list;
-}
-
-// Установка итератора на первый элемент списка
-Iterator begin(OneList *list) {
-    Iterator iter;
-    iter.list = list;
-    iter.ptr = list->Head;
-    return iter;
-}
-
-// Установка итератора на элемент списка, следующий за последним
-Iterator end(OneList *list) {
-    Iterator iter;
-    iter.list = list;
-    iter.ptr = NULL;
-    return iter;
-}
-
-// Перевод итератора на следующий элемент списка от текущего
-Iterator next(Iterator iter) {
-    Iterator new_iter;
-    new_iter.list = iter.list;
-    new_iter.ptr = (iter.ptr != NULL) ? iter.ptr->Next : NULL;
-    return new_iter;
-}
-
-// Перевод итератора на предыдущий элемент списка от текущего
-Iterator prev(Iterator iter) {
-    Iterator new_iter;
-    new_iter.list = iter.list;
-    new_iter.ptr = NULL;
-    
-    Node *current = iter.list->Head;
-    while (current != NULL && current->Next != iter.ptr) {
-        current = current->Next;
+void print_list(Node *head) {
+    Node *current = head;
+    while (current != NULL) {
+        printf("value = %d\n", current->value);
+        printf("value adress = %p \n", &(current->value));
+        current = current->next;
     }
-    new_iter.ptr = current;
-    return new_iter;
 }
 
-// Проверка, достигнут ли конец списка
-bool is_done(Iterator iter) {
-    return (iter.ptr == NULL);
-}
+// Функция для поиска узла с минимальным значением в двух списках
+Node* find_min_node(Node *head_one, Node *head_two, int minimum) {
+    Node *min_node = NULL;
+    int min_value = 1000; // Начальное значение для минимума
 
-// Возврат значения элемента списка, на который указывает итератор
-int value(Iterator iter) {
-    if (is_done(iter)) return 0;
-    return iter.ptr->data;
-}
+    Node *current_one = head_one;
+    Node *current_two = head_two;
 
-// Функция добавления нового узла после текущего узла
-bool add_Node_2(Iterator *iter, int data) {
-    if (iter->ptr == iter->list->Tail) {
-        Node *newNode = (Node *)malloc(sizeof(Node));
-        if (newNode == NULL) return false;
-        newNode->data = data;
-        newNode->Next = NULL;
-        iter->list->Tail->Next = newNode;
-        iter->list->Tail = newNode;
-        iter->list->count_Node++;
-        return true;
+    while (current_one != NULL) {
+        if (((current_one->value) < min_value) && ((current_one->value) > minimum)) {
+            min_value = current_one->value;
+            min_node = current_one;
+        }
+        current_one = current_one->next;
     }
 
-    Node *temp = iter->list->Head;
-    while (temp != NULL && temp->Next != iter->ptr) {
-        temp = temp->Next;
+    while (current_two != NULL) {
+        if (((current_two->value) < min_value) && ((current_two->value) > minimum)) {
+            min_value = current_two->value;
+            min_node = current_two;
+        }
+        current_two = current_two->next;
     }
 
-    if (temp == NULL) return false;
-
-    Node *newNode = (Node *)malloc(sizeof(Node));
-    if (newNode == NULL) return false;
-    newNode->data = data;
-    newNode->Next = iter->ptr->Next;
-    temp->Next = newNode;
-    iter->list->count_Node++;
-    return true;
+    return min_node;
 }
 
-// Функция добавления узла в конец списка
-void push_Tail(OneList *list, int data) {
-    Node *newNode = (Node *)malloc(sizeof(Node));
-    if (newNode == NULL) return;
-    newNode->data = data;
-    newNode->Next = NULL;
-    if (list->Tail == NULL) {
-        list->Head = newNode;
-        list->Tail = newNode;
+
+// Функция для добавления узла в конец списка
+void append_node(Node **head, int value) {
+    // Создаем новый узел
+    Node *new_node = (Node*)malloc(sizeof(Node));
+    if (new_node == NULL) {
+        printf("Ошибка выделения памяти\n");
+        exit(2);
+    }
+    new_node->value = value;
+    new_node->next = NULL;
+
+    // Если список пуст, новый узел становится головой списка
+    if (*head == NULL) {
+        *head = new_node;
     } else {
-        list->Tail->Next = newNode;
-        list->Tail = newNode;
-    }
-    list->count_Node++;
-}
-
-// Инициализация списка
-OneList *init() {
-    OneList *list = (OneList *)malloc(sizeof(OneList));
-    if (list == NULL) return NULL;
-    list->Head = NULL;
-    list->Tail = NULL;
-    list->count_Node = 0;
-    return list;
-}
-
-// Вывод элементов списка с головы
-void output(OneList *list) {
-    Iterator iter;
-    init_iterator(&iter, list);
-    while (!is_done(iter)) {
-        printf("%d\n", value(iter));
-        iter = next(iter);
+        // Иначе находим последний узел и добавляем новый узел в конец
+        Node *current = *head;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = new_node;
     }
 }
 
-// Основная функция
-int main() {
-    setlocale (LC_ALL, "Rus");
 
-    // Объявляем список и инициализируем его
-    OneList *list = init();
-    if (list == NULL) {
-        fprintf(stderr, "Ошибка инициализации списка\n");
-        return 1;
+int main()
+{
+    srand((unsigned int)time(NULL));
+    int length_sum = 0;
+    Node *head = NULL;
+    Node *head1 = NULL;
+    Node *head2 = NULL;
+
+    Node* minimaln_node;
+
+    int min_value = 1;
+    
+    // Создаем и добавляем 10 узлов
+    for (int i = 1; i <= 10; i++) {
+        append_node(&head, (1 + rand()%100)); // Присваиваем каждому узлу значение случайное значение от 1 до 100
+        length_sum++;
     }
 
-    // Заполняем список элементами с хвоста
-    for (int i = 1; i <= 5; i++) {
-        push_Tail(list, i);
+    for (int i = 1; i <= 20; i++) {
+        append_node(&head1, (1 + rand()%100)); // Присваиваем каждому узлу значение случайное значение от 1 до 100
+        length_sum++;
+    }
+    length_sum++;
+
+
+    printf("список [1]\n");
+    print_list(head); // Выводим узлы списка 1
+
+    
+    printf("\n список [2] \n");
+    print_list(head1); // Выводим узлы списка 2
+
+    printf("\n общая длина списков= %d \n", length_sum);
+
+    getch();
+
+
+    //*******************************************************************
+    for( int i=1; i<=length_sum; i++)
+    {
+        minimaln_node = find_min_node(head, head1, min_value);
+
+        if (minimaln_node != NULL){
+            min_value = minimaln_node->value;
+            printf(" [%d] minimum adres = %p \n", i, minimaln_node);
+            printf(" [%d] minimum value = %d \n", i, minimaln_node->value);
+            append_node(&head2, minimaln_node->value);
+        }
     }
 
-    // Выводим элементы списка
-    printf("Элементы списка\n");
-    output(list);
 
-    // Объявляем итератор
-    Iterator iter;
+   
+    printf("\n список [3] \n");
+    print_list(head2); // Выводим узлы списка 3
 
-    // Инициализируем итератор
-    init_iterator(&iter, list);
 
-    // Устанавливаем итератор на начало списка
-    iter = begin(list);
-    printf("Первый элемент: %d\n", value(iter));
+    // Освобождаем память
+    while (head != NULL) {
+        Node *temp = head;
+        head = head->next;
+        free(temp);
+    }
 
-    // Устанавливаем итератор на следующий элемент после текущего
-    iter = next(iter);
-    printf("Следующий за текущим: %d\n", value(iter));
+    while (head1 != NULL) {
+        Node *temp = head1;
+        head1 = head1->next;
+        free(temp);
+    }
 
-    // Устанавливаем итератор на предыдущий элемент от текущего
-    iter = prev(iter);
-    printf("Предыдущий перед текущим: %d\n", value(iter));
+    while (head2 != NULL) {
+        Node *temp = head2;
+        head2 = head2->next;
+        free(temp);
+    }
 
-    // Добавляем элемент после текущего
-    add_Node_2(&iter, 100);
 
-    // Устанавливаем итератор на следующий элемент после текущего
-    iter = next(iter);
-    printf("Добавленный элемент после текущего: %d\n", value(iter));
+    getch();
 
-    // Устанавливаем итератор на следующий после последнего
-    iter = end(list);
-    printf("Следующий после последнего: %d\n", value(iter));
-    getchar();
     return 0;
 }
+// Код завершения 0 - весь код выполнился (надеюсь нормально)
+// Код завершения 1 - пока не придумал
+// Код завершения 2 - нехватка памяти
