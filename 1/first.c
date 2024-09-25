@@ -1,11 +1,11 @@
 /*
-Сформировать два односвязных списка целых чисел. Готово
+Сформировать два односвязных списка целых чисел. 
 
-Слить их в односвязный циклический список. Наполовину готово
+Слить их в односвязный циклический список. 
 Сделать список циклическим. Дописать
 
 Так чтобы узлы были 
-расположены по возрастанию значений. Готово
+расположены по возрастанию значений. 
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -28,8 +28,36 @@ void print_list(Node *head) {
     }
 }
 
+    
+
+    // Вспомогательная функция для проверки, является ли узел уже добавленным в объединенный список
+    int is_added(Node *node, Node **added_nodes) {
+        Node *current = *added_nodes;
+        while (current != NULL) {
+            if (current == node) {
+                return 1;
+            }
+            current = current->next;
+        }
+        return 0;
+    }
+    
+
+
+    // Вспомогательная функция для добавления узла в список добавленных узлов
+    void add_node_to_added(Node *node, Node **added_nodes) {
+        Node *new_node = (Node*)malloc(sizeof(Node));
+        new_node->value = node->value;
+        new_node->next = *added_nodes;
+        *added_nodes = new_node;
+    }
+
+
+
+
+
 // Функция для поиска узла с минимальным значением в двух списках
-Node* find_min_node(Node *head_one, Node *head_two, int minimum) {
+Node* find_min_node(Node *head_one, Node *head_two, int minimum, Node *added_nodes) {
     Node *min_node = NULL;
     int min_value = 1000; // Начальное значение для минимума
 
@@ -37,7 +65,7 @@ Node* find_min_node(Node *head_one, Node *head_two, int minimum) {
     Node *current_two = head_two;
 
     while (current_one != NULL) {
-        if (((current_one->value) < min_value) && ((current_one->value) > minimum)) {
+        if (((current_one->value) < min_value) && ((current_one->value) > minimum) && (!is_added(current_one, added_nodes))) {
             min_value = current_one->value;
             min_node = current_one;
         }
@@ -45,11 +73,15 @@ Node* find_min_node(Node *head_one, Node *head_two, int minimum) {
     }
 
     while (current_two != NULL) {
-        if (((current_two->value) < min_value) && ((current_two->value) > minimum)) {
+        if (((current_two->value) < min_value) && ((current_two->value) > minimum) && (!is_added(current_two, added_nodes))) {
             min_value = current_two->value;
             min_node = current_two;
         }
         current_two = current_two->next;
+    }
+
+    if (min_node != NULL) {
+        add_node_to_added(min_node, added_nodes);
     }
 
     return min_node;
@@ -88,6 +120,8 @@ int main()
     Node *head = NULL;
     Node *head1 = NULL;
     Node *head2 = NULL;
+    Node *last_node = NULL;
+
 
     Node* minimaln_node;
 
@@ -105,7 +139,7 @@ int main()
     }
     length_sum++;
 
-
+    
     printf("список [1]\n");
     print_list(head); // Выводим узлы списка 1
 
@@ -121,21 +155,25 @@ int main()
     //*******************************************************************
     for( int i=1; i<=length_sum; i++)
     {
-        minimaln_node = find_min_node(head, head1, min_value);
+        minimaln_node = find_min_node(head, head1, min_value, &head2);
 
         if (minimaln_node != NULL){
             min_value = minimaln_node->value;
             printf(" [%d] minimum adres = %p \n", i, minimaln_node);
             printf(" [%d] minimum value = %d \n", i, minimaln_node->value);
             append_node(&head2, minimaln_node->value);
+            if (last_node == NULL){
+                last_node = head2;
+            }
         }
     }
 
+    // Подключаем последний узел к первому узлу, чтобы сделать список циклическим
+    last_node->next = head2;
 
-   
+    ///////////////////////
     printf("\n список [3] \n");
     print_list(head2); // Выводим узлы списка 3
-
 
     // Освобождаем память
     while (head != NULL) {
@@ -156,9 +194,7 @@ int main()
         free(temp);
     }
 
-
     getch();
-
     return 0;
 }
 // Код завершения 0 - весь код выполнился (надеюсь нормально)
