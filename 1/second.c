@@ -4,7 +4,7 @@
 Слить их в односвязный циклический список. Наполовину готово
 Сделать список циклическим. Дописать
 
-Так чтобы узлы были 
+Так чтобы узлы были
 расположены по возрастанию значений. Готово
 */
 #include <stdlib.h>
@@ -80,6 +80,28 @@ void append_node(Node **head, int value) {
     }
 }
 
+void append_node_cycle(Node **head, Node **value) {
+    // Создаем новый узел
+    Node *new_node = (Node*)malloc(sizeof(Node));
+    if (new_node == NULL) {
+        printf("Ошибка выделения памяти\n");
+        exit(2);
+    }
+    new_node->value = value;
+    new_node->next = NULL;
+
+    // Если список пуст, новый узел становится головой списка
+    if (*head == NULL) {
+        *head = new_node;
+    } else {
+        // Иначе находим последний узел и добавляем новый узел в конец
+        Node *current = *head;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = value;
+    }
+}
 
 int main()
 {
@@ -92,7 +114,7 @@ int main()
     Node* minimaln_node;
 
     int min_value = 1;
-    
+
     // Создаем и добавляем 10 узлов
     for (int i = 1; i <= 10; i++) {
         append_node(&head, (1 + rand()%100)); // Присваиваем каждому узлу значение случайное значение от 1 до 100
@@ -106,33 +128,49 @@ int main()
     length_sum++;
 
 
+
     printf("список [1]\n");
     print_list(head); // Выводим узлы списка 1
 
-    
+
     printf("\n список [2] \n");
     print_list(head1); // Выводим узлы списка 2
 
-    printf("\n общая длина списков= %d \n", length_sum);
+
+    printf("\n sum lengrh lists= %d \n", length_sum);
 
     getch();
 
 
+
+
+
     //*******************************************************************
+    Node *temp;
+
+    temp = head2;
+
     for( int i=1; i<=length_sum; i++)
     {
         minimaln_node = find_min_node(head, head1, min_value);
 
         if (minimaln_node != NULL){
             min_value = minimaln_node->value;
+
+            temp -> next = minimaln_node;
+
             printf(" [%d] minimum adres = %p \n", i, minimaln_node);
+
             printf(" [%d] minimum value = %d \n", i, minimaln_node->value);
-            append_node(&head2, minimaln_node->value);
+            temp = minimaln_node;
         }
+
     }
+    //*******************************************************************
 
 
-   
+
+
     printf("\n список [3] \n");
     print_list(head2); // Выводим узлы списка 3
 
