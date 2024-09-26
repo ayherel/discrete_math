@@ -6,6 +6,7 @@
 
 Так чтобы узлы были 
 расположены по возрастанию значений. 
+
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,25 +20,52 @@ struct Node {
 
 typedef struct Node Node;
 
+// (F3) - Функция для добавления узла в конец списка
+void append_node(Node **head, int value) {
+    // Создаем новый узел
+    Node *new_node = (Node*)malloc(sizeof(Node));
+    if (new_node == NULL) {
+        printf("Ошибка выделения памяти\n");
+        exit(2);
+    }
+    new_node->value = value;
+    new_node->next = NULL;
+
+    // Если список пуст, новый узел становится головой списка
+    if (*head == NULL) {
+        *head = new_node;
+    } 
+    else {
+        // Иначе находим последний узел и добавляем новый узел в конец
+        Node *current = *head;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = new_node;
+    }
+}
 
 // (F1) - Функция для вывода элементов списка
 void print_list(Node *head) {
-    int flag = 0;
+    //int flag = 0;
     Node *current = head;
     while (current != NULL) {
         printf("value = %d\n", current->value);
         printf("value adress = %p \n", &(current->value));
         current = current->next;
-    if (flag == 1)
-    //print_element_from_adres(&(current->value));
+    /*
+    if (flag == 1){
+    print_element_from_adres(&(current->value));
     flag++;
+    }
+    */
     }
 }
 
 
     
 
-// (для F2) - Вспомогательная функция для проверки, является ли узел уже добавленным в объединенный список
+// (F2.1) - Вспомогательная функция для проверки, является ли узел уже добавленным в объединенный список
 int is_added(Node *node, Node **added_nodes) {
     Node *current = *added_nodes;
     while (current != NULL) {
@@ -51,7 +79,7 @@ int is_added(Node *node, Node **added_nodes) {
     
 
 
-// (для F2) - Вспомогательная функция для добавления узла в список добавленных узлов
+// (F2.2) - Вспомогательная функция для добавления узла в список добавленных узлов
 void add_node_to_added(Node *node, Node **added_nodes) {
     Node *new_node = (Node*)malloc(sizeof(Node));
     new_node->value = node->value;
@@ -96,29 +124,7 @@ Node* find_min_node(Node *head_one, Node *head_two, int minimum, Node *added_nod
 
 
 
-// (F3) - Функция для добавления узла в конец списка
-void append_node(Node **head, int value) {
-    // Создаем новый узел
-    Node *new_node = (Node*)malloc(sizeof(Node));
-    if (new_node == NULL) {
-        printf("Ошибка выделения памяти\n");
-        exit(2);
-    }
-    new_node->value = value;
-    new_node->next = NULL;
 
-    // Если список пуст, новый узел становится головой списка
-    if (*head == NULL) {
-        *head = new_node;
-    } else {
-        // Иначе находим последний узел и добавляем новый узел в конец
-        Node *current = *head;
-        while (current->next != NULL) {
-            current = current->next;
-        }
-        current->next = new_node;
-    }
-}
 
 /*
 // (F4)- Функция для добавления узла в начало списка
@@ -221,27 +227,30 @@ Node* extract_node_from_adress(Node *head, int index) {
     }
 }
 */
-
 int main()
 {
     srand((unsigned int)time(NULL));
+
     int length_sum = 0;
+
     Node *head = NULL;
+    int dlina_head = 10;
     Node *head1 = NULL;
+    int dlina_head1 = 20;
+
     Node *head2 = NULL;
+
     Node *last_node = NULL;
-
-
     Node* minimaln_node;
 
     int min_value = 1;
     
-    // Создаем и добавляем 10 узлов
+    // Создаем и добавляем dlina_head узлов
     for (int i = 1; i <= 10; i++) {
         append_node(&head, (1 + rand()%100)); // Присваиваем каждому узлу значение случайное значение от 1 до 100
         length_sum++;
     }
-
+    // Создаем и добавляем dlina_head1 узлов
     for (int i = 1; i <= 20; i++) {
         append_node(&head1, (1 + rand()%100)); // Присваиваем каждому узлу значение случайное значение от 1 до 100
         length_sum++;
