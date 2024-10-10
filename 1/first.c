@@ -1,181 +1,142 @@
-/*
-Сформировать два односвязных списка целых чисел. Готово
-
-Слить их в односвязный циклический список. Наполовину готово
-Сделать список циклическим. Дописать
-
-Так чтобы узлы были
-расположены по возрастанию значений. Готово
-*/
-#include <stdlib.h>
 #include <stdio.h>
-#include <conio.h>
+#include <stdlib.h>
 #include <time.h>
-
-struct Node {
+#include <conio.h>
+typedef struct Node {
     int value;
-    struct Node *next;
-};
+    struct Node* next;
+} Node;
 
-typedef struct Node Node;
-
-void print_list(Node *head) {
-    Node *current = head;
-    while (current != NULL) {
-        printf("value = %d\n", current->value);
-        printf("value adress = %p \n", &(current->value));
-        current = current->next;
-    }
-}
-
-// Функция для поиска узла с минимальным значением в двух списках
-Node* find_min_node(Node *head_one, Node *head_two, int minimum) {
-    Node *min_node = NULL;
-    int min_value = 1000; // Начальное значение для минимума
-
-    Node *current_one = head_one;
-    Node *current_two = head_two;
-
-    while (current_one != NULL) {
-        if (((current_one->value) < min_value) && ((current_one->value) > minimum)) {
-            min_value = current_one->value;
-            min_node = current_one;
-        }
-        current_one = current_one->next;
-    }
-
-    while (current_two != NULL) {
-        if (((current_two->value) < min_value) && ((current_two->value) > minimum)) {
-            min_value = current_two->value;
-            min_node = current_two;
-        }
-        current_two = current_two->next;
-    }
-
-    return min_node;
-}
-
-
-// Функция для добавления узла в конец списка
-void append_node(Node **head, int value) {
-    // Создаем новый узел
-    Node *new_node = (Node*)malloc(sizeof(Node));
-    if (new_node == NULL) {
-        printf("Ошибка выделения памяти\n");
-        exit(2);
-    }
-    new_node->value = value;
-    new_node->next = NULL;
-
-    // Если список пуст, новый узел становится головой списка
-    if (*head == NULL) {
-        *head = new_node;
-    } else {
-        // Иначе находим последний узел и добавляем новый узел в конец
-        Node *current = *head;
-        while (current->next != NULL) {
-            current = current->next;
-        }
-        current->next = new_node;
-    }
-}
-
-
-int main()
-{
-    srand((unsigned int)time(NULL));
-    int length_sum = 0;
-    Node *head = NULL;
-    Node *head1 = NULL;
-    Node *head2;
-
-    Node* minimaln_node;
-
-    int min_value = 1;
-
-    // Создаем и добавляем 10 узлов
-    for (int i = 1; i <= 10; i++) {
-        append_node(&head, (1 + rand()%100)); // Присваиваем каждому узлу значение случайное значение от 1 до 100
-        length_sum++;
-    }
-
-    for (int i = 1; i <= 20; i++) {
-        append_node(&head1, (1 + rand()%100)); // Присваиваем каждому узлу значение случайное значение от 1 до 100
-        length_sum++;
-    }
-    length_sum++;
-
-
-
-    printf("список [1]\n");
-    print_list(head); // Выводим узлы списка 1
-
-
-    printf("\n список [2] \n");
-    print_list(head1); // Выводим узлы списка 2
-
-
-    printf("\n sum lengrh lists= %d \n", length_sum);
-
-
-
-    Node *current;
-
-    for( int i=1; i<=length_sum; i++)
-    {
-        current= find_min_node(head, head1, min_value);
-        if (current != NULL){
-            if (i == 1)
-            {
-                head->next = current;
-            }
-            else {
-                min_value = current ->value;
-                current -> next = find_min_node(head, head1, min_value);
-            }
-        }
-
-    }
-
-    /*
-    Node *current = head;
-    while (current != NULL) {
-        printf("value = %d\n", current->value);
-        printf("value adress = %p \n", &(current->value));
-        current = current->next;
-    }
-    */
-
-
-
-    printf("\n список [3] \n");
-    print_list(head2); // Выводим узлы списка 3
-
-
-    // Освобождаем память
+void print_list(Node* head) {
     while (head != NULL) {
-        Node *temp = head;
+        printf("%d (address: %p) \n", head->value, (void*)head);
         head = head->next;
-        free(temp);
+    }
+    printf("\n");
+}
+
+void merge_lists(Node **head1, Node **head2, Node **head3) {
+    // Инициализируем голову третьего списка
+    *head3 = NULL;
+
+    // Если какой-либо из входных списков пуст, возвращаемся
+    if (*head1 == NULL) {
+        *head3 = *head2;
+        return;
+    }
+    if (*head2 == NULL) {
+        *head3 = *head1;
+        return;
     }
 
-    while (head1 != NULL) {
-        Node *temp = head1;
-        head1 = head1->next;
-        free(temp);
+    // Создаем голову третьего списка
+    Node *current = NULL;
+    Node *tail = NULL;
+
+    // Объединяем узлы двух списков
+    while (*head1 != NULL && *head2 != NULL) {
+        // Сравниваем значения узлов
+        if ((*head1)->value < (*head2)->value) {
+            // Добавляем узел из первого списка в третий список
+            Node *temp = *head1;
+            *head1 = (*head1)->next;
+            temp->next = NULL;
+            if (*head3 == NULL) {
+                *head3 = temp;
+                tail = temp;
+            } else {
+                tail->next = temp;
+                tail = temp;
+            }
+        } else {
+            // Добавляем узел из второго списка в третий список
+            Node *temp = *head2;
+            *head2 = (*head2)->next;
+            temp->next = NULL;
+            if (*head3 == NULL) {
+                *head3 = temp;
+                tail = temp;
+            } else {
+                tail->next = temp;
+                tail = temp;
+            }
+        }
     }
 
-    while (head2 != NULL) {
-        Node *temp = head2;
-        head2 = head2->next;
-        free(temp);
+    // Добавляем оставшиеся узлы из первого списка
+    while (*head1 != NULL) {
+        Node *temp = *head1;
+        *head1 = (*head1)->next;
+        temp->next = NULL;
+        tail->next = temp;
+        tail = temp;
     }
 
+    // Добавляем оставшиеся узлы из второго списка
+    while (*head2 != NULL) {
+        Node *temp = *head2;
+        *head2 = (*head2)->next;
+        temp->next = NULL;
+        tail->next = temp;
+        tail = temp;
+    }
+}
 
+void sort_list(Node **head) {
+    Node *current = *head;
+    Node *next = NULL;
+    int temp;
+
+    while (current != NULL) {
+        next = current->next;
+        while (next != NULL) {
+            if (current->value > next->value) {
+                temp = current->value;
+                current->value = next->value;
+                next->value = temp;
+            }
+            next = next->next;
+        }
+        current = current->next;
+    }
+}
+
+void generate_list(Node** head, int size) {
+    *head = (Node*)malloc(sizeof(Node));
+    (*head)->value = rand() % 100 + 1;
+    (*head)->next = NULL;
+
+    Node* current = *head;
+    for (int i = 1; i < size; i++) {
+        current->next = (Node*)malloc(sizeof(Node));
+        current->next->value = rand() % 100 + 1;
+        current->next->next = NULL;
+        current = current->next;
+    }
+}
+
+int main() {
+    srand(time(NULL)); // инициализируем генератор случайных чисел
+
+    Node* head1 = NULL;
+    generate_list(&head1, 5);
+    sort_list(&head1);
+
+    Node* head2 = NULL;
+    generate_list(&head2, 10);
+    sort_list(&head2);
+
+    Node* head3 = NULL;
+
+    printf("List 1: ");
+    print_list(head1);
+    printf("List 2: ");
+    print_list(head2);
+
+    merge_lists(&head1, &head2, &head3);
+
+    printf("Merged List: ");
+    print_list(head3);
     getch();
-
     return 0;
 }
-// Код завершения 0 - весь код выполнился (надеюсь нормально)
-// Код завершения 1 - пока не придумал
-// Код завершения 2 - нехватка памяти
