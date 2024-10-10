@@ -1,78 +1,46 @@
-/*
-Сформировать два односвязных списка целых чисел. Готово
-
-Слить их в односвязный циклический список. Наполовину готово
-Сделать список циклическим. Дописать
-
-Так чтобы узлы были
-расположены по возрастанию значений. Готово
-*/
-#include <stdlib.h>
 #include <stdio.h>
-#include <conio.h>
+#include <stdlib.h>
 #include <time.h>
-
-struct Node {
+#include <conio.h>
+// Структура для представления узла в связном списке
+typedef struct Node {
     int value;
-    struct Node *next;
-};
+    struct Node* next;
+} Node;
 
-typedef struct Node Node;
-
-void print_list(Node *head) {
-    Node *current = head;
-    while (current != NULL) {
-        printf("value = %d\n", current->value);
-        printf("value adress = %p \n", &(current->value));
-        current = current->next;
-    }
+// Функция для инициализации списка
+void init_list(Node** head) {
+    *head = NULL;
 }
 
-// Функция для поиска узла с минимальным значением в двух списках
-Node* find_min_node(Node *head_one, Node *head_two, int minimum) {
-    Node *min_node = NULL;
-    int min_value = 1000; // Начальное значение для минимума
-
-    Node *current_one = head_one;
-    Node *current_two = head_two;
-
-    while (current_one != NULL) {
-        if (((current_one->value) < min_value) && ((current_one->value) > minimum)) {
-            min_value = current_one->value;
-            min_node = current_one;
-        }
-        current_one = current_one->next;
+// Функция для перебора элементов списка и печати их значений
+void traverse_list(Node* head) {
+    while (head != NULL) {
+        printf("%d -> ", head->value);
+        head = head->next;
     }
-
-    while (current_two != NULL) {
-        if (((current_two->value) < min_value) && ((current_two->value) > minimum)) {
-            min_value = current_two->value;
-            min_node = current_two;
-        }
-        current_two = current_two->next;
-    }
-
-    return min_node;
+    printf("NULL\n");
 }
 
+// Функция для вставки узла в начало списка
+void insert_at_beginning(Node** head, int value) {
+    
+    Node* new_node = (Node*)malloc(sizeof(Node));
+    new_node->value = value;
+    new_node->next = *head;
+    *head = new_node;
+}
 
-// Функция для добавления узла в конец списка
-void append_node(Node **head, int value) {
-    // Создаем новый узел
-    Node *new_node = (Node*)malloc(sizeof(Node));
-    if (new_node == NULL) {
-        printf("Ошибка выделения памяти\n");
-        exit(2);
-    }
+// Функция для вставки узла в конец списка
+void insert_at_end(Node** head, int value) {
+    Node* new_node = (Node*)malloc(sizeof(Node));
     new_node->value = value;
     new_node->next = NULL;
 
-    // Если список пуст, новый узел становится головой списка
     if (*head == NULL) {
         *head = new_node;
     } else {
-        // Иначе находим последний узел и добавляем новый узел в конец
-        Node *current = *head;
+        Node* current = *head;
         while (current->next != NULL) {
             current = current->next;
         }
@@ -80,125 +48,162 @@ void append_node(Node **head, int value) {
     }
 }
 
-void append_node_cycle(Node **head, Node **value) {
-    // Создаем новый узел
-    Node *new_node = (Node*)malloc(sizeof(Node));
-    if (new_node == NULL) {
-        printf("Ошибка выделения памяти\n");
-        exit(2);
-    }
+// Функция для вставки узла в произвольную часть списка
+void insert_at_position(Node** head, int value, int position) {
+    Node* new_node = (Node*)malloc(sizeof(Node));
     new_node->value = value;
-    new_node->next = NULL;
 
-    // Если список пуст, новый узел становится головой списка
-    if (*head == NULL) {
+    if (position == 0) {
+        new_node->next = *head;
         *head = new_node;
     } else {
-        // Иначе находим последний узел и добавляем новый узел в конец
-        Node *current = *head;
-        while (current->next != NULL) {
+        Node* current = *head;
+        for (int i = 0; i < position - 1; i++) {
             current = current->next;
         }
-        current->next = value;
+        new_node->next = current->next;
+        current->next = new_node;
     }
 }
 
-int main()
-{
-    srand((unsigned int)time(NULL));
-    int length_sum = 0;
-    Node *head = NULL;
-    Node *head1 = NULL;
-    Node *head2 = NULL;
-
-    Node* minimaln_node;
-
-    int min_value = 1;
-
-    // Создаем и добавляем 10 узлов
-    for (int i = 1; i <= 10; i++) {
-        append_node(&head, (1 + rand()%100)); // Присваиваем каждому узлу значение случайное значение от 1 до 100
-        length_sum++;
+// Функция для удаления узла из начала списка
+void delete_at_beginning(Node** head) {
+    if (*head == NULL) {
+        return;
     }
+    Node* temp = *head;
+    *head = (*head)->next;
+    free(temp);
+}
 
-    for (int i = 1; i <= 20; i++) {
-        append_node(&head1, (1 + rand()%100)); // Присваиваем каждому узлу значение случайное значение от 1 до 100
-        length_sum++;
+// Функция для удаления узла из конца списка
+void delete_at_end(Node** head) {
+    if (*head == NULL) {
+        return;
     }
-    length_sum++;
+    Node* current = *head;
+    Node* previous = NULL;
+    while (current->next != NULL) {
+        previous = current;
+        current = current->next;
+    }
+    if (previous == NULL) {
+        *head = NULL;
+    } else {
+        previous->next = NULL;
+    }
+    free(current);
+}
 
-
-
-    printf("список [1]\n");
-    print_list(head); // Выводим узлы списка 1
-
-
-    printf("\n список [2] \n");
-    print_list(head1); // Выводим узлы списка 2
-
-
-    printf("\n sum lengrh lists= %d \n", length_sum);
-
-    getch();
-
-
-
-
-
-    //*******************************************************************
-    Node *temp;
-
-    temp = head2;
-
-    for( int i=1; i<=length_sum; i++)
-    {
-        minimaln_node = find_min_node(head, head1, min_value);
-
-        if (minimaln_node != NULL){
-            min_value = minimaln_node->value;
-
-            temp -> next = minimaln_node;
-
-            printf(" [%d] minimum adres = %p \n", i, minimaln_node);
-
-            printf(" [%d] minimum value = %d \n", i, minimaln_node->value);
-            temp = minimaln_node;
+// Функция для удаления узла из произвольной части списка
+void delete_at_position(Node** head, int position) {
+    if (*head == NULL) {
+        return;
+    }
+    if (position == 0) {
+        Node* temp = *head;
+        *head = (*head)->next;
+        free(temp);
+    } else {
+        Node* current = *head;
+        for (int i = 0; i < position - 1; i++) {
+            current = current->next;
         }
-
-    }
-    //*******************************************************************
-
-
-
-
-    printf("\n список [3] \n");
-    print_list(head2); // Выводим узлы списка 3
-
-
-    // Освобождаем память
-    while (head != NULL) {
-        Node *temp = head;
-        head = head->next;
+        Node* temp = current->next;
+        current->next = temp->next;
         free(temp);
     }
+}
 
-    while (head1 != NULL) {
-        Node *temp = head1;
-        head1 = head1->next;
-        free(temp);
+// Функция для доступа к узлу по индексу
+int access_node(Node* head, int index) {
+    Node* current = head;
+    for (int i = 0; i < index; i++) {
+        if (current == NULL) {
+            return -1; // Индекс вне границ
+        }
+        current = current->next;
+    }
+    return current->value;
+}
+
+// Функция для удаления списка
+void delete_list(Node** head) {
+    Node* current = *head;
+    Node* next;
+    while (current != NULL) {
+        next = current->next;
+        free(current);
+        current = next;
+    }
+    *head = NULL;
+}
+
+// Функция для проверки на пустоту списка
+int is_empty(Node* head) {
+    return head == NULL;
+}
+
+int main() {
+    Node* head;
+    init_list(&head);
+
+    // Инициализация списка с 10 узлами, значения от 1 до 100
+    srand(time(NULL));
+    for (int i = 0; i < 10; i++) {
+        insert_at_end(&head, rand() % 100 + 1);
     }
 
-    while (head2 != NULL) {
-        Node *temp = head2;
-        head2 = head2->next;
-        free(temp);
+    // Перебор элементов списка
+    printf("перебор \n");
+    traverse_list(head);
+
+    // Вставка узла в начало списка
+    printf("вставка в начало \n");
+    insert_at_beginning(&head, 0);
+    traverse_list(head);
+
+    // Вставка узла в конец списка
+    printf("вставка в конец \n");
+    insert_at_end(&head, 0);
+    traverse_list(head);
+
+    // Вставка узла в произвольную часть списка
+    printf("вставка в произвольную \n");
+    insert_at_position(&head, 0, 5);
+    traverse_list(head);
+
+    // Удаление узла из начала списка
+    printf("удаление из начала \n");
+    delete_at_beginning(&head);
+    traverse_list(head);
+
+    // Удаление узла из конца списка
+    printf("удаление из конца \n");
+    delete_at_end(&head);
+    traverse_list(head);
+
+    // Удаление узла из произвольной части списка
+    printf("удаление из произвольной части \n");
+    delete_at_position(&head, 3);
+    traverse_list(head);
+
+    // Доступ к узлу по индексу
+    printf("доступ по индексу \n");
+    int value = access_node(head, 2);
+    printf("Value at index 2: %d\n", value);
+
+    // Удаление списка
+    printf("удаление списка\n");
+    delete_list(&head);
+
+    // Проверка на пустоту списка
+    printf("проверка на пустоту \n");
+    if (is_empty(head)) {
+        printf("List is empty\n");
+    } else {
+        printf("List is not empty\n");
     }
-
-
-    getch();
-
+        getch();
     return 0;
 }
-// Код завершения 0 - весь код выполнился (надеюсь нормально)
-// Код завершения 1 - пока не придумал
-// Код завершения 2 - нехватка памяти
