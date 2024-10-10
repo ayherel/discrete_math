@@ -80,7 +80,12 @@ void merge_lists(Node **head1, Node **head2, Node **head3) {
         tail->next = temp;
         tail = temp;
     }
+
+    // Создаем цикл, связывая последний узел с первым
+    //tail->next = *head3;
 }
+
+
 
 void sort_list(Node **head) {
     Node *current = *head;
