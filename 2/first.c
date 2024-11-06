@@ -12,7 +12,7 @@ typedef struct Stack {
     Node* top;
 } Stack;
 
-// func dlya sozdaniya novogo uzla stack
+// func dlya sozdaniya novogo uzla
 Node* createNode(int value) {
     Node* newNode = (Node*)malloc(sizeof(Node));
     newNode->value = value;
@@ -39,10 +39,10 @@ void push(Stack* stack, int value) {
     stack->top = newNode;
 }
 
-// udalenie elementa v stack
+// udalenie elementa iz stack
 int pop(Stack* stack) {
     if (stackempty(stack)) {
-        printf("Stack is empty\n");
+        printf("stack is empty\n");
         exit(1);
     }
     Node* temp = stack->top;
@@ -55,7 +55,7 @@ int pop(Stack* stack) {
 // get verh stack
 int peek(Stack* stack) {
     if (stackempty(stack)) {
-        printf("Stack is empty\n");
+        printf("stack is empty\n");
         exit(1);
     }
     return stack->top->value;
