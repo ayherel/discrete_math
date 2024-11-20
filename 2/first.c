@@ -43,6 +43,7 @@ void push(Stack* stack, int value) {
 int pop(Stack* stack) {
     if (stackempty(stack)) {
         printf("stack is empty\n");
+		getch();
         exit(1);
     }
     Node* temp = stack->top;
@@ -56,6 +57,7 @@ int pop(Stack* stack) {
 int peek(Stack* stack) {
     if (stackempty(stack)) {
         printf("stack is empty\n");
+		getch();
         exit(1);
     }
     return stack->top->value;
@@ -80,7 +82,7 @@ void reverse(char* stroka) {
 
 // proverka simvola
 int proverkasimvola(char ch) {
-    return (ch >= '0' && ch <= '9');
+    return ch >= '0' && ch <= '9';
 }
 
 // preobrazovanie infiksnogo v prefixnoe
@@ -138,8 +140,15 @@ int evaluatePrefix(char* prefix) {
                     push(stack, operand1 * operand2);
                     break;
                 case '/':
-                    push(stack, operand1 / operand2);
-                    break;
+					if (operand2 == 0) {
+						printf("mistake - delenie na 0 \n");
+						getch();
+						exit(1);
+					}
+					else {
+						push(stack, operand1 / operand2);
+                    	break;
+					}
             }
         }
     }
@@ -149,21 +158,33 @@ int evaluatePrefix(char* prefix) {
 int main() {
     char infix[100];
     char prefix[100];
+	int flag;
+	flag = 0;
 
-    printf("vvedite infiksnoe virajenie: ");
-    fgets(infix, sizeof(infix), stdin);
-    
-    // udalenie simvola novoi stroki
-    size_t len = strlen(infix);
-    if (len > 0 && infix[len - 1] == '\n') {
-        infix[len - 1] = '\0';
-    }
+	do{
+		system("cls");
+		printf("vvedite infiksnoe virajenie: ");
+		fgets(infix, sizeof(infix), stdin);
+		
+		// udalenie simvola novoi stroki
+		size_t len = strlen(infix);
+		if (len > 0 && infix[len - 1] == '\n') {
+			infix[len - 1] = '\0';
+		}
 
-    infixToPrefix(infix, prefix);
-    printf("prefiksnoe virajenie: %s\n", prefix);
+		infixToPrefix(infix, prefix);
+		printf("prefiksnoe virajenie: %s\n", prefix);
 
-    int result = evaluatePrefix(prefix);
-    printf("rezultat: %d\n", result);
-    getch();
+		int result = evaluatePrefix(prefix);
+		printf("rezultat: %d\n", result);
+
+		printf("hotite zakonchit rabotu? esli da vvedite 1, inache luboe chislo: ");
+		scanf (" %d", &flag);
+		
+		while (getchar() != '\n');
+		
+	} while (flag != 1);
+	
+	getch();
     return 0;
 }
