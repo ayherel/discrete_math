@@ -80,7 +80,7 @@ void reverse(char* stroka) {
 
 // proverka simvola
 int proverkasimvola(char ch) {
-    return ch >= '0' && ch <= '9';
+    return (ch >= '0' && ch <= '9');
 }
 
 // preobrazovanie infiksnogo v prefixnoe
