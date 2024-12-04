@@ -2,111 +2,189 @@
 #include <stdlib.h>
 #include <string.h>
 #include <conio.h>
-// Определение структуры дерева
+
+////////////////////////////////////////////////STACK////////////////////////////////////////////////
+typedef struct Node {                                                                              //
+    int value;                                                                                     //
+    struct Node* next;                                                                             //
+} Node;                                                                                            //
+typedef struct Stack {                                                                             //
+    Node* top;                                                                                     //
+} Stack;                                                                                           //
+// initial stack                                                                                   //
+Stack* createStack() {                                                                             //
+    Stack* stack = (Stack*)malloc(sizeof(Stack));                                                  //
+    stack->top = NULL;                                                                             //
+    return stack;                                                                                  //
+}                                                                                                  //
+// proverka stack                                                                                  //
+int stackempty(Stack* stack) {                                                                     //
+    return stack->top == NULL;                                                                     //
+}                                                                                                  //
+// func dlya sozdaniya novogo uzla                                                                 //
+Node* createNode(int value) {                                                                      //
+    Node* newNode = (Node*)malloc(sizeof(Node));                                                   //
+    newNode->value = value;                                                                        //
+    newNode->next = NULL;                                                                          //
+    return newNode;                                                                                //
+}                                                                                                  //
+// dobavlenie elementa v stack                                                                     //
+void push(Stack* stack, int value) {                                                               //
+    Node* newNode = createNode(value);                                                             //
+    newNode->next = stack->top;                                                                    //
+    stack->top = newNode;                                                                          //
+}                                                                                                  //
+// udalenie elementa iz stack                                                                      //
+int pop(Stack* stack) {                                                                            //
+    if (stackempty(stack)) {                                                                       //
+        printf("stack is empty\n");                                                                //
+		getch();                                                                                   //
+        exit(1);                                                                                   //
+    }                                                                                              //
+    Node* temp = stack->top;                                                                       //
+    int value = temp->value;                                                                       //
+    stack->top = stack->top->next;                                                                 //
+    free(temp);                                                                                    //
+    return value;                                                                                  //
+}                                                                                                  //
+// get verh stack                                                                                  //
+int peek(Stack* stack) {                                                                           //
+    if (stackempty(stack)) {                                                                       //
+        printf("stack is empty\n");                                                                //
+		getch();                                                                                   //
+        exit(1);                                                                                   //
+    }                                                                                              //
+    return stack->top->value;                                                                      //
+}                                                                                                  //
+////////////////////////////////////////////////STACK////////////////////////////////////////////////
+
 struct nodeDerevo {
     char data[50];
+    int vozrast;
     struct nodeDerevo *left;
     struct nodeDerevo *right;
 };
 typedef struct nodeDerevo nodeDerevo;
 
-// Функция для создания нового узла
 nodeDerevo* newNode(char data[]) {
     nodeDerevo* node = (nodeDerevo*)malloc(sizeof(nodeDerevo));
     strcpy(node->data, data);
+    node->vozrast = 0;
     node->left = node->right = NULL;
     return node;
 }
 
-// Функция для вставки элемента в дерево (без учета лексикографического порядка)
-nodeDerevo* insert(nodeDerevo* nachaloDereva, char data[]) {
-    if (nachaloDereva == NULL) {
-        return newNode(data);
+nodeDerevo* insert(nodeDerevo* fnachaloDereva, char fdata[], int fvozrast) {
+    if (fnachaloDereva == NULL) {
+        nodeDerevo* new_node = newNode(fdata);
+        new_node->vozrast = fvozrast; // Устанавливаем возраст
+        return new_node;
     }
 
-    // Мы просто вставляем элементы произвольно: если нет левого потомка — вставляем туда, иначе — в правого
-    if (nachaloDereva->left == NULL) {
-        nachaloDereva->left = newNode(data);
-    } else if (nachaloDereva->right == NULL) {
-        nachaloDereva->right = newNode(data);
+    int x = strcmp(fdata, fnachaloDereva->data);
+    if (x < 0) {
+        // Если данные меньше, вставляем в левое поддерево
+        fnachaloDereva->left = insert(fnachaloDereva->left, fdata, fvozrast);
+    } else if (x == 0) {
+        // Если данные равны, добавляем дубликат в правое поддерево с увеличением возраста
+        fnachaloDereva->right = insert(fnachaloDereva->right, fdata, fvozrast + 1);
     } else {
-        // Если оба поддерева заняты, добавляем в левое поддерево рекурсивно
-        nachaloDereva->left = insert(nachaloDereva->left, data);
+        // Если данные больше, вставляем в правое поддерево
+        fnachaloDereva->right = insert(fnachaloDereva->right, fdata, fvozrast);
     }
-
-    return nachaloDereva;
+    return fnachaloDereva;
 }
 
-// Функция для поиска самого младшего общего предка (youngest)
-nodeDerevo* findyoung(nodeDerevo* nachaloDereva, char data1[], char data2[]) {
-    // Если дерево пустое, возвращаем NULL
-    if (nachaloDereva == NULL) {
-        return NULL;
-    }
-
-    // Если один из узлов совпадает с текущим, то текущий узел - это youngest
-    if (strcmp(nachaloDereva->data, data1) == 0 || strcmp(nachaloDereva->data, data2) == 0) {
-        return nachaloDereva;
-    }
-
-    // Ищем youngest в левом и правом поддереве
-    nodeDerevo* left = findyoung(nachaloDereva->left, data1, data2);
-    nodeDerevo* right = findyoung(nachaloDereva->right, data1, data2);
-
-    // Если один узел найден в левом поддереве, а другой в правом, то корень - youngest
-    if (left && right) {
-        return nachaloDereva;
-    }
-
-    // Если оба узла находятся в одном из поддеревьев, возвращаем этот поддерево
-    return left ? left : right;
-}
-
-// Функция для вывода дерева с отступами
 void printDerevo(nodeDerevo* nachaloDereva, int otstup) {
     if (nachaloDereva == NULL) {
         return;
     }
 
-    // Печатаем правое поддерево
     printDerevo(nachaloDereva->right, otstup + 1);
 
-    // Печатаем текущий узел с отступами
     for (int i = 0; i < otstup; i++) {
         printf("\t");
     }
-    printf("%s\n", nachaloDereva->data);
+    printf("%s_%d \n", nachaloDereva->data, nachaloDereva->vozrast);
 
-    // Печатаем левое поддерево
     printDerevo(nachaloDereva->left, otstup + 1);
 }
+
+
+int findPathToNode(nodeDerevo* root, char target[], Stack* stack) {
+    if (root == NULL) {
+        return 0; // Узел не найден
+    }
+
+    // Добавляем текущий узел в стек
+    char buffer[60];
+    sprintf(buffer, "%s_%d", root->data, root->vozrast);
+    push(stack, strdup(buffer)); // Копируем строку в стек
+
+    // Если текущий узел — искомый
+    if (strcmp(root->data, target) == 0) {
+        return 1; // Путь найден
+    }
+
+    // Рекурсивный поиск в левом и правом поддеревьях
+    if (findPathToNode(root->left, target, stack) || findPathToNode(root->right, target, stack)) {
+        return 1; // Путь найден в одном из поддеревьев
+    }
+
+    // Если путь не найден, удаляем текущий узел из стека
+    free(pop(stack));
+    return 0; // Путь не найден
+}
+
+
+
 
 int main() {
     nodeDerevo* nachaloDereva = NULL;
 
-    // Вставляем элементы в дерево произвольно
-    nachaloDereva = insert(nachaloDereva, "cat");
-    insert(nachaloDereva, "catL");
-    insert(nachaloDereva, "catR");
-    insert(nachaloDereva, "catLL");
-    insert(nachaloDereva, "catLR");
-    insert(nachaloDereva, "catLLL");
-    insert(nachaloDereva, "catLLR");
-
-    // Печатаем дерево
-    printf("Дерево поиска:\n");
+    // Вставляем узлы в дерево
+    nachaloDereva = insert(nachaloDereva, "bca", 0);
+    insert(nachaloDereva, "abc", 0);
+    insert(nachaloDereva, "cbb", 0);
+    insert(nachaloDereva, "cba", 0);
+    insert(nachaloDereva, "acb", 0);
+    insert(nachaloDereva, "bca", 0);
+    insert(nachaloDereva, "cbc", 0);
+    insert(nachaloDereva, "bcb", 0);
+    insert(nachaloDereva, "bc1", 0);
+    insert(nachaloDereva, "bca1", 0);
+    insert(nachaloDereva, "bca3", 0);
+    insert(nachaloDereva, "bca4", 0);
+    printf("Derevo:\n");
     printDerevo(nachaloDereva, 0);
 
-    // Находим и выводим youngest для двух строк
-    char data1[] = "catR";
-    char data2[] = "catLL";
-    nodeDerevo* Derevo = findyoung(nachaloDereva, data1, data2);
+    // Массив для хранения пути
+    char pathArray[30][60];
+    char target[] = "bca1";
 
-    if (Derevo != NULL) {
-        printf("\nyoungest predok for '%s' и '%s' : %s\n", data1, data2, Derevo->data);
+    // Создаем стек
+    Stack* stack = createStack();
+
+    // Ищем путь
+    if (findPathToNode(nachaloDereva, target, stack)) {
+        // Перемещаем путь из стека в массив
+        int index = 0;
+        while (!stackempty(stack)) {
+            strcpy(pathArray[index], pop(stack));
+            index++;
+        }
+
+        // Выводим путь
+        printf("Path to %s:\n", target);
+        for (int i = 0; i < index; i++) {
+            printf("%s\n", pathArray[i]);
+        }
     } else {
-        printf("\nyoungest predok not found '%s' и '%s'.\n", data1, data2);
+        printf("Node %s not found in the tree.\n", target);
     }
+
+
+
     getch();
     return 0;
 }
